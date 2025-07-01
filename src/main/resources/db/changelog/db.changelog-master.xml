@@ -1,0 +1,11 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <include file="2025/06/20250615_create_users_table.sql" author="alex"
+             relativeToChangelogFile="true"/>
+
+    <include file="2025/06/20250615_create_reminder_table.sql" author="alex"
+             relativeToChangelogFile="true"/>
+</databaseChangeLog>
