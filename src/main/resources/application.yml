@@ -33,3 +33,13 @@ telegram:
   bot:
     token: YOUR_TELEGRAM_BOT_TOKEN
     username: YOUR_BOT_USERNAME
+
+keycloak:
+  server-url: http://localhost:8081
+  realm: reminder
+  client-id: admin-spring
+  client-secret: YX8Jrn7yQp6mKvT8fmybqxXJ6T4Bd4Hc
+
+logging:
+  level:
+    org.springframework.security: DEBUG
