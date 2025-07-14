@@ -2,6 +2,7 @@ package com.example.reminder.controller;
 
 import com.example.reminder.dto.RegisterRequest;
 import com.example.reminder.service.KeycloakAdminClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,5 +28,16 @@ public class AuthController {
     public String getUserInfo(@AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getClaimAsString("preferred_username");
         return "Logged in as: " + username;
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestParam String refreshToken) {
+        try {
+            keycloakAdminClient.logout(refreshToken);
+            return ResponseEntity.ok("Logout successful");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Logout failed: " + e.getMessage());
+        }
     }
 }
