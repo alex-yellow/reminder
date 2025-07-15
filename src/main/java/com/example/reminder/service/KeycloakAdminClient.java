@@ -1,5 +1,6 @@
 package com.example.reminder.service;
 
+import com.example.reminder.config.KeycloakConstants;
 import com.example.reminder.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -25,35 +26,33 @@ public class KeycloakAdminClient {
     @Value("${keycloak.client-secret}")
     private String clientSecret;
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private String getAdminAccessToken() {
-        String url = keycloakServerUrl + "/realms/master/protocol/openid-connect/token";
+        String url = keycloakServerUrl + KeycloakConstants.TOKEN_PATH;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "client_credentials");
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
+        params.add(KeycloakConstants.GRANT_TYPE, KeycloakConstants.GRANT_TYPE_CLIENT_CREDENTIALS);
+        params.add(KeycloakConstants.CLIENT_ID, clientId);
+        params.add(KeycloakConstants.CLIENT_SECRET, clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, request, Map.class);
-
         Map<String, Object> body = response.getBody();
 
-        if (body == null || !body.containsKey("access_token")) {
+        if (body == null || !body.containsKey(KeycloakConstants.ACCESS_TOKEN)) {
             throw new RuntimeException("Cannot obtain admin access token from Keycloak");
         }
 
-        return (String) body.get("access_token");
+        return (String) body.get(KeycloakConstants.ACCESS_TOKEN);
     }
 
     public void createUser(RegisterRequest registerRequest) {
-        String url = keycloakServerUrl + "/admin/realms/" + realm + "/users";
-
+        String url = keycloakServerUrl + String.format(KeycloakConstants.USERS_PATH_TEMPLATE, realm);
         String adminToken = getAdminAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
@@ -65,9 +64,9 @@ public class KeycloakAdminClient {
         userPayload.put("email", registerRequest.getEmail());
         userPayload.put("enabled", true);
         userPayload.put("credentials", List.of(Map.of(
-                "type", "password",
-                "value", registerRequest.getPassword(),
-                "temporary", false
+                KeycloakConstants.CREDENTIAL_TYPE, KeycloakConstants.CREDENTIAL_PASSWORD,
+                KeycloakConstants.CREDENTIAL_VALUE, registerRequest.getPassword(),
+                KeycloakConstants.CREDENTIAL_TEMPORARY, false
         )));
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(userPayload, headers);
@@ -78,16 +77,17 @@ public class KeycloakAdminClient {
             throw new RuntimeException("Failed to create user in Keycloak: " + response.getBody());
         }
     }
+
     public void logout(String refreshToken) {
-        String url = keycloakServerUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
+        String url = keycloakServerUrl + String.format(KeycloakConstants.LOGOUT_PATH_TEMPLATE, realm);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("refresh_token", refreshToken);
+        params.add(KeycloakConstants.CLIENT_ID, clientId);
+        params.add(KeycloakConstants.CLIENT_SECRET, clientSecret);
+        params.add(KeycloakConstants.REFRESH_TOKEN, refreshToken);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
