@@ -46,3 +46,16 @@ keycloak:
 logging:
   level:
     org.springframework.security: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    oauth2-redirect-url: http://localhost:8080/swagger-ui/oauth2-redirect.html
+  oauth-flow:
+    authorization-url: http://localhost:8081/realms/reminder/protocol/openid-connect/auth
+    token-url: http://localhost:8081/realms/reminder/protocol/openid-connect/token
+    scopes:
+      openid: openid
+      profile: profile
+      email: email
