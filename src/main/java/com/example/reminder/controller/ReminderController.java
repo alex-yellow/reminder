@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@SecurityRequirement(name = "oauth2")
+@SecurityRequirement(name = "bearerAuth") // или на методах
 @RestController
 @RequestMapping("/api/v1/reminder")
 @RequiredArgsConstructor
