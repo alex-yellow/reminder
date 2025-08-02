@@ -18,34 +18,32 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
   mail:
-    host: ${MAIL_HOST:smtp.example.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:your_email}
-    password: ${MAIL_PASSWORD:your_email_password}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+    host: localhost
+    port: 1025
+
+    protocol: smtp
+  jackson:
+    time-zone: Europe/Moscow
 
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN:YOUR_TELEGRAM_BOT_TOKEN}
-    username: ${TELEGRAM_BOT_USERNAME:YOUR_BOT_USERNAME}
+    token: 8273658740:AAGt2j4OT3OGjozLJbF2AfoCfQw7_nW73gE
+    username: myreminder2025appbot
 
 keycloak:
   server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8081}
   realm: ${KEYCLOAK_REALM:reminder}
-  client-id: ${KEYCLOAK_CLIENT_ID:admin-spring}
-  client-secret: ${KEYCLOAK_CLIENT_SECRET:secret}
-  token-path: /realms/master/protocol/openid-connect/token
+  client-id: ${KEYCLOAK_CLIENT_ID:reminder-api}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:LFQX2hxqVBSfln6pi358iioX4Ds4fx9w}
+  token-path: /realms/${keycloak.realm}/protocol/openid-connect/token
   logout-path: /realms/${keycloak.realm}/protocol/openid-connect/logout
   users-path: /admin/realms/${keycloak.realm}/users
 
 logging:
   level:
     org.springframework.security: DEBUG
+    org.springframework.mail: DEBUG
+    com.sun.mail: DEBUG
 
 springdoc:
   api-docs:

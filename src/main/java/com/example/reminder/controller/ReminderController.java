@@ -3,7 +3,6 @@ package com.example.reminder.controller;
 import com.example.reminder.dto.PagedResponse;
 import com.example.reminder.dto.ReminderCreateDto;
 import com.example.reminder.dto.ReminderDto;
-import com.example.reminder.dto.ReminderMapper;
 import com.example.reminder.model.User;
 import com.example.reminder.repository.UserRepository;
 import com.example.reminder.service.ReminderService;
@@ -30,7 +29,6 @@ import java.util.List;
 public class ReminderController {
 
     private final ReminderService reminderService;
-    private final ReminderMapper reminderMapper;
     private final UserRepository userRepository;
 
     @Operation(summary = "Создать напоминание")

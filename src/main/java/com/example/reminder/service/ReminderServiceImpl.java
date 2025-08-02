@@ -7,7 +7,6 @@ import com.example.reminder.model.Reminder;
 import com.example.reminder.model.User;
 import com.example.reminder.repository.ReminderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

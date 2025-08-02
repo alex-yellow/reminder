@@ -23,7 +23,6 @@ public class AuthIntegrationTest {
 
     @Test
     void registerLoginAndAccessProtectedEndpoint() {
-        // 1. Регистрация нового пользователя
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("testuser1");
         registerRequest.setEmail("testuser1@example.com");
@@ -41,7 +40,6 @@ public class AuthIntegrationTest {
 
         assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
-        // 2. Получение токена для Keycloak
         HttpHeaders tokenHeaders = new HttpHeaders();
         tokenHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -77,6 +75,6 @@ public class AuthIntegrationTest {
         );
 
         assertThat(meResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(meResponse.getBody()).contains("testuser");
+        assertThat(meResponse.getBody()).contains("testuser1");
     }
 }

@@ -27,8 +27,8 @@ class ReminderRepositoryTest {
     @DisplayName("Сохранение и поиск напоминаний пользователя")
     void testFindByUser() {
         User user = new User();
-        user.setUsername("testuser");
-        user.setPassword("password");
+        user.setUsername("testuser1");
+        user.setPassword("password1");
         userRepository.save(user);
 
         Reminder reminder = new Reminder();

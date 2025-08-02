@@ -22,15 +22,15 @@ class UserRepositoryTest {
     @DisplayName("Сохранение и поиск пользователя по username")
     void testFindByUsername() {
         User user = new User();
-        user.setUsername("testuser");
-        user.setPassword("password");
-        user.setEmail("test@example.com");
+        user.setUsername("testuser1");
+        user.setPassword("password1");
+        user.setEmail("test1@example.com");
 
         userRepository.save(user);
 
-        Optional<User> found = userRepository.findByUsername("testuser");
+        Optional<User> found = userRepository.findByUsername("testuser1");
 
         assertThat(found).isPresent();
-        assertThat(found.get().getEmail()).isEqualTo("test@example.com");
+        assertThat(found.get().getEmail()).isEqualTo("test1@example.com");
     }
 }

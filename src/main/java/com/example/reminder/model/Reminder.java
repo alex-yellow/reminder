@@ -30,4 +30,15 @@ public class Reminder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Override
+    public String toString() {
+        return "Reminder{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", remind=" + remind +
+                ", user=" + (user != null ? user.getUsername() : "null") +
+                '}';
+    }
 }
