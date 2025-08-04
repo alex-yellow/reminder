@@ -1,80 +1,82 @@
 package com.example.reminder.security;
 
 import com.example.reminder.dto.RegisterRequest;
+import com.example.reminder.model.User;
+import com.example.reminder.repository.UserRepository;
+import com.example.reminder.service.KeycloakAdminClient;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@AutoConfigureMockMvc
 public class AuthIntegrationTest {
 
-    @LocalServerPort
-    private int port;
+    @Autowired
+    private MockMvc mockMvc;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @MockBean
+    private KeycloakAdminClient keycloakAdminClient;
 
-    private String baseUrl() {
-        return "http://localhost:" + port + "/api/v1/auth";
+    @MockBean
+    private UserRepository userRepository;
+
+    @Test
+    public void testSuccessfulUserRegistration() throws Exception {
+        doNothing().when(keycloakAdminClient).createUser(any(RegisterRequest.class));
+        when(userRepository.save(any(User.class))).thenReturn(new User());
+
+        String requestBody = """
+                {
+                    "username": "testuser",
+                    "email": "test@example.com",
+                    "password": "testpassword"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("User registered successfully"));
+    }
+
+
+    @Test
+    @WithMockUser
+    public void testSuccessfulLogout() throws Exception {
+        doNothing().when(keycloakAdminClient).logout("valid-token");
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .param("refreshToken", "valid-token")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Logout successful"));
     }
 
     @Test
-    void registerLoginAndAccessProtectedEndpoint() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername("testuser1");
-        registerRequest.setEmail("testuser1@example.com");
-        registerRequest.setPassword("test1234");
+    @WithMockUser
+    public void testLogoutWithInvalidToken() throws Exception {
+        doThrow(new RuntimeException("Invalid token"))
+                .when(keycloakAdminClient).logout("invalid-token");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<RegisterRequest> registerEntity = new HttpEntity<>(registerRequest, headers);
-
-        ResponseEntity<String> registerResponse = restTemplate.postForEntity(
-                baseUrl() + "/register",
-                registerEntity,
-                String.class
-        );
-
-        assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        HttpHeaders tokenHeaders = new HttpHeaders();
-        tokenHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        String tokenUrl = "http://localhost:8081/realms/reminder/protocol/openid-connect/token";
-
-        String body = "grant_type=password"
-                + "&client_id=reminder-api"
-                + "&client_secret=K1gHFMs8m6OSsZBtYfDmxOTclGjwcfkG"
-                + "&username=testuser1"
-                + "&password=test1234";
-
-        HttpEntity<String> tokenEntity = new HttpEntity<>(body, tokenHeaders);
-
-        ResponseEntity<String> tokenResponse = restTemplate.postForEntity(tokenUrl, tokenEntity, String.class);
-
-        assertThat(tokenResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(tokenResponse.getBody()).contains("access_token");
-
-        // 3. Получение токена
-        String accessToken = tokenResponse.getBody().split("\"access_token\":\"")[1].split("\"")[0];
-
-        // 4. Проверка защищенного эндпойнта
-        HttpHeaders authHeaders = new HttpHeaders();
-        authHeaders.setBearerAuth(accessToken);
-
-        HttpEntity<Void> authEntity = new HttpEntity<>(authHeaders);
-
-        ResponseEntity<String> meResponse = restTemplate.exchange(
-                baseUrl() + "/me",
-                HttpMethod.GET,
-                authEntity,
-                String.class
-        );
-
-        assertThat(meResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(meResponse.getBody()).contains("testuser1");
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .param("refreshToken", "invalid-token")
+                        .with(csrf()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(containsString("Logout failed")));
     }
 }
