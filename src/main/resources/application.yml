@@ -3,37 +3,57 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/reminderdb
-    username: postgres
-    password: postgres
-
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/reminderdb
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/reminder}
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: true
-
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
-
   mail:
-    host: smtp.example.com
-    port: 587
-    username: your_email
-    password: your_email_password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+    host: localhost
+    port: 1025
+
+    protocol: smtp
+  jackson:
+    time-zone: Europe/Moscow
 
 telegram:
   bot:
-    token: YOUR_TELEGRAM_BOT_TOKEN
-    username: YOUR_BOT_USERNAME
+    token: 8273658740:AAGt2j4OT3OGjozLJbF2AfoCfQw7_nW73gE
+    username: myreminder2025appbot
 
-security:
-  oauth2:
-    resourceserver:
-      jwt:
-        issuer-uri: http://localhost:8080/realms/reminder
+keycloak:
+  server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8081}
+  realm: ${KEYCLOAK_REALM:reminder}
+  client-id: ${KEYCLOAK_CLIENT_ID:reminder-api}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:LFQX2hxqVBSfln6pi358iioX4Ds4fx9w}
+  token-path: /realms/${keycloak.realm}/protocol/openid-connect/token
+  logout-path: /realms/${keycloak.realm}/protocol/openid-connect/logout
+  users-path: /admin/realms/${keycloak.realm}/users
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.mail: DEBUG
+    com.sun.mail: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    oauth2-redirect-url: http://localhost:8080/swagger-ui/oauth2-redirect.html
+  oauth-flow:
+    authorization-url: http://localhost:8081/realms/reminder/protocol/openid-connect/auth
+    token-url: http://localhost:8081/realms/reminder/protocol/openid-connect/token
+    scopes:
+      openid: openid
+      profile: profile
+      email: email
